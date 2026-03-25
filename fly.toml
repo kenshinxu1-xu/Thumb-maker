@@ -1,0 +1,14 @@
+app = "kenshin-anime-bot"   # change this to your desired app name
+
+[build]
+
+[env]
+  PORT = "8080"   # not used by the bot, but fly needs it
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
