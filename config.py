@@ -1,10 +1,3 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN is required")
-
-BRANDING_IMAGE_URL = os.getenv("BRANDING_IMAGE_URL")  # optional
+# config.py
+BOT_TOKEN = "8689630171:AAGH6h7MKBTPNpWKs8CMiFu8oI9a3sQhImo"
+BRANDING_IMAGE_URL = "https://files.catbox.moe/nl6m4u.jpg"
