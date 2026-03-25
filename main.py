@@ -1,6 +1,5 @@
 import logging
 import asyncio
-import threading
 from io import BytesIO
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -12,27 +11,11 @@ from styles import (
     style_poster_focus, style_magazine, style_vertical,
     style_dark_gradient, style_anime_list, style_kenshin_special
 )
-from flask import Flask, Response
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Flask app for keep‑alive
-flask_app = Flask(__name__)
-
-@flask_app.route('/')
-def health():
-    return "OK", 200
-
-@flask_app.route('/ping')
-def ping():
-    return "pong", 200
-
-def run_flask():
-    port = int(os.environ.get('PORT', 8080))
-    flask_app.run(host='0.0.0.0', port=port)
-
-# Load branding (same as before)
+# Load branding image
 branding_img = None
 if config.BRANDING_IMAGE_URL:
     try:
@@ -43,7 +26,6 @@ if config.BRANDING_IMAGE_URL:
 
 user_data = {}  # {chat_id: info_dict}
 
-# List of styles with names and functions
 STYLES = [
     ("🎨 Classic Card", style_classic),
     ("🌀 Full Bleed", style_full_bleed),
@@ -69,7 +51,6 @@ async def fetch_and_show_styles(update: Update, context: ContextTypes.DEFAULT_TY
             info = await get_manhwa(title)
         user_data[chat_id] = info
 
-        # Paginate styles (show 5 per page)
         page = 0
         total = len(STYLES)
         per_page = 5
@@ -145,7 +126,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             idx = page * per_page + i
             if idx >= total: break
             keyboard.append([InlineKeyboardButton(STYLES[idx][0], callback_data=f"style_{idx}")])
-        # Add navigation buttons
         nav = []
         if page > 0:
             nav.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"page_{page-1}"))
@@ -157,12 +137,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_reply_markup(reply_markup=reply_markup)
 
 def main():
-    # Start Flask server in a background thread
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
-    flask_thread.start()
-    logger.info("Flask server started")
-
-    # Start Telegram bot
     app = Application.builder().token(config.BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("anime", anime_cmd))
@@ -173,5 +147,4 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
-    import os
     main()
