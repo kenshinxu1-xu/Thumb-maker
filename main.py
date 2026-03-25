@@ -3,7 +3,6 @@ import asyncio
 from io import BytesIO
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-import config
 from api import get_anime, get_manga, get_manhwa
 from image_gen import download_image
 from styles import (
@@ -15,11 +14,16 @@ from styles import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ==================== HARDCODED CONFIGURATION ====================
+BOT_TOKEN = "8689630171:AAGH6h7MKBTPNpWKs8CMiFu8oI9a3sQhImo"
+BRANDING_IMAGE_URL = "https://files.catbox.moe/nl6m4u.jpg"
+# ================================================================
+
 # Load branding image
 branding_img = None
-if config.BRANDING_IMAGE_URL:
+if BRANDING_IMAGE_URL:
     try:
-        branding_img = asyncio.run(download_image(config.BRANDING_IMAGE_URL))
+        branding_img = asyncio.run(download_image(BRANDING_IMAGE_URL))
         logger.info("Custom branding loaded")
     except Exception as e:
         logger.warning(f"Could not load branding image: {e}")
@@ -137,7 +141,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_reply_markup(reply_markup=reply_markup)
 
 def main():
-    app = Application.builder().token(config.BOT_TOKEN).build()
+    app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("anime", anime_cmd))
     app.add_handler(CommandHandler("manga", manga_cmd))
