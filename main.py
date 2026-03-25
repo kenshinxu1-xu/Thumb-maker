@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import os
 from io import BytesIO
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -14,12 +15,14 @@ from styles import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ==================== HARDCODED CONFIGURATION ====================
-BOT_TOKEN = "8689630171:AAGH6h7MKBTPNpWKs8CMiFu8oI9a3sQhImo"
-BRANDING_IMAGE_URL = "https://files.catbox.moe/nl6m4u.jpg"
-# ================================================================
+# ========== Environment variables ==========
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN environment variable not set")
 
-# Load branding image
+BRANDING_IMAGE_URL = os.getenv("BRANDING_IMAGE_URL")
+# ===========================================
+
 branding_img = None
 if BRANDING_IMAGE_URL:
     try:
@@ -28,7 +31,7 @@ if BRANDING_IMAGE_URL:
     except Exception as e:
         logger.warning(f"Could not load branding image: {e}")
 
-user_data = {}  # {chat_id: info_dict}
+user_data = {}
 
 STYLES = [
     ("🎨 Classic Card", style_classic),
