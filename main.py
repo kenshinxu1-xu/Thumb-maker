@@ -1,18 +1,38 @@
 import logging
 import asyncio
+import threading
 from io import BytesIO
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 import config
 from api import get_anime, get_manga, get_manhwa
 from image_gen import download_image
-from styles import (style_classic, style_full_bleed, style_modern, style_minimal,
-                    style_poster_focus, style_magazine, style_vertical,
-                    style_dark_gradient, style_anime_list, style_kenshin_special)
+from styles import (
+    style_classic, style_full_bleed, style_modern, style_minimal,
+    style_poster_focus, style_magazine, style_vertical,
+    style_dark_gradient, style_anime_list, style_kenshin_special
+)
+from flask import Flask, Response
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Flask app for keep‑alive
+flask_app = Flask(__name__)
+
+@flask_app.route('/')
+def health():
+    return "OK", 200
+
+@flask_app.route('/ping')
+def ping():
+    return "pong", 200
+
+def run_flask():
+    port = int(os.environ.get('PORT', 8080))
+    flask_app.run(host='0.0.0.0', port=port)
+
+# Load branding (same as before)
 branding_img = None
 if config.BRANDING_IMAGE_URL:
     try:
@@ -61,7 +81,6 @@ async def fetch_and_show_styles(update: Update, context: ContextTypes.DEFAULT_TY
         keyboard.append([InlineKeyboardButton("➡️ Next", callback_data=f"page_{page+1}")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         await msg.edit_text(f"✅ Found: {info['title']}\nChoose a thumbnail style:", reply_markup=reply_markup)
-        # Store current page in context for later
         context.user_data['current_page'] = page
     except Exception as e:
         await msg.edit_text(f"❌ Error: {str(e)}")
@@ -138,6 +157,12 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_reply_markup(reply_markup=reply_markup)
 
 def main():
+    # Start Flask server in a background thread
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    logger.info("Flask server started")
+
+    # Start Telegram bot
     app = Application.builder().token(config.BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("anime", anime_cmd))
@@ -148,4 +173,5 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
+    import os
     main()
