@@ -1,3 +1,3 @@
 # config.py
-BOT_TOKEN = "8689630171:AAGH6h7MKBTPNpWKs8CMiFu8oI9a3sQhImo"
+BOT_TOKEN = "8689630171:AAE8qAyatXvubsu0xuWZOx0DbetNJs1ou9g"
 BRANDING_IMAGE_URL = "https://files.catbox.moe/nl6m4u.jpg"
